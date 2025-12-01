@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import api from '../services/api';
 
+const audioAlerta = new Audio('/alarm.mp3');
+
 export const useAlertasStore = defineStore('alertas', {
     state: () => ({
         alertas: [],
@@ -31,7 +33,9 @@ export const useAlertasStore = defineStore('alertas', {
                     const message = JSON.parse(event.data);
                     if (message.type === 'alerta-nueva') {
                         this.alertas.unshift(message.data);
-                        // Optional: Add notification logic here or in the component
+                        if (message.data.severidad === 'CRITICAL') {
+                            this.playAudio();
+                        }
                     }
                 } catch (e) {
                     console.error('Error parsing WebSocket message:', e);
@@ -47,6 +51,16 @@ export const useAlertasStore = defineStore('alertas', {
             this.socket.onerror = (error) => {
                 console.error('WebSocket Error:', error);
             };
+        },
+        playAudio() {
+            try {
+                audioAlerta.currentTime = 0;
+                audioAlerta.play().catch(error => {
+                    console.warn('El navegador bloqueó el sonido. El usuario debe interactuar primero con la página.', error);
+                });
+            } catch (e) {
+                console.error("Error al reproducir sonido", e);
+            }
         },
         async simularFalla(idActivo) {
             return api.post('/simulador/falla', { id_activo: idActivo });
