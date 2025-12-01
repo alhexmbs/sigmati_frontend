@@ -1,14 +1,22 @@
 <template>
-    <aside class="w-64 bg-slate-900 text-white h-screen flex flex-col fixed left-0 top-0 z-50">
+    <aside 
+        class="fixed top-0 left-0 z-50 h-screen w-64 bg-slate-900 text-white transition-transform duration-300 ease-in-out md:translate-x-0"
+        :class="isOpen ? 'translate-x-0' : '-translate-x-full'"
+    >
         <div class="p-6 flex items-center gap-3 border-b border-slate-800">
             <div class="bg-amber-600 p-2 rounded-lg">
                 <Activity class="w-6 h-6 text-white" />
             </div>
             <h1 class="text-xl font-bold tracking-tight">SIGMATI</h1>
+            <!-- Close button for mobile -->
+            <button @click="$emit('close')" class="ml-auto md:hidden text-slate-400 hover:text-white">
+                <X class="w-5 h-5" />
+            </button>
         </div>
 
         <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
             <router-link v-for="item in menuItems" :key="item.path" :to="item.path"
+                @click="$emit('close')"
                 class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group" :class="[
                     $route.path === item.path
                         ? 'bg-amber-600 text-white shadow-lg shadow-amber-900/20'
@@ -43,8 +51,15 @@ import {
     Bell,
     Activity,
     User,
-    MonitorPlay
+    MonitorPlay,
+    X
 } from 'lucide-vue-next';
+
+defineProps({
+    isOpen: Boolean
+});
+
+defineEmits(['close']);
 
 const route = useRoute();
 const authStore = useAuthStore();

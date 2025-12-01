@@ -1,6 +1,6 @@
 <template>
     <MainLayout>
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h1 class="text-2xl font-bold text-slate-900">Monitor de alertas</h1>
             <div class="flex items-center gap-2">
                 <span class="relative flex h-3 w-3">
@@ -17,10 +17,10 @@
         <div class="space-y-4">
             <transition-group name="list">
                 <div v-for="alerta in alertas" :key="alerta.id || alerta.timestamp"
-                    class="bg-white p-4 rounded-lg shadow-sm border-l-4 flex items-start justify-between transition-all duration-300"
+                    class="bg-white p-4 rounded-lg shadow-sm border-l-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all duration-300"
                     :class="getAlertClass(alerta.nivel)">
                     <div class="flex items-start gap-4">
-                        <div :class="getIconBgClass(alerta.nivel)" class="p-2 rounded-lg">
+                        <div :class="getIconBgClass(alerta.nivel)" class="p-2 rounded-lg shrink-0">
                             <AlertTriangle v-if="alerta.nivel === 'CRITICAL'" class="w-6 h-6 text-red-600" />
                             <Info v-else class="w-6 h-6 text-blue-600" />
                         </div>
@@ -31,7 +31,7 @@
                         </div>
                     </div>
                     <span :class="getBadgeClass(alerta.nivel)"
-                        class="px-2.5 py-0.5 rounded-full text-xs font-medium border">
+                        class="px-2.5 py-0.5 rounded-full text-xs font-medium border self-start md:self-center">
                         {{ alerta.nivel }}
                     </span>
                 </div>

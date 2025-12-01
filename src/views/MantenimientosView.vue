@@ -1,8 +1,8 @@
 <template>
     <MainLayout>
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h1 class="text-2xl font-bold text-slate-900">Gestión de mantenimientos</h1>
-            <Button variant="primary" @click="openModal">
+            <Button variant="primary" @click="openModal" class="w-full md:w-auto">
                 <Plus class="w-4 h-4 mr-2 inline-block" />
                 Nuevo mantenimiento
             </Button>
@@ -94,14 +94,14 @@
                         rows="3"></textarea>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input v-model="form.fecha_inicio" label="Fecha de inicio" type="datetime-local" :min="minDateTime"
                         required />
                     <Input v-model="form.fecha_fin" label="Fecha de fin estimada" type="datetime-local"
                         :min="form.fecha_inicio || minDateTime" required />
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-medium text-slate-700">Prioridad</label>
                         <select v-model="form.prioridad"
@@ -124,7 +124,7 @@
                 </div>
 
                 <!-- Checkboxes for Activos and Areas -->
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-medium text-slate-700">Activos afectados</label>
                         <div class="h-32 overflow-y-auto border border-slate-300 rounded-lg p-2 bg-slate-50">

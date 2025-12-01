@@ -1,6 +1,6 @@
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-slate-100">
-        <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-slate-200">
+    <div class="min-h-screen flex items-center justify-center bg-slate-100 p-4">
+        <div class="w-full max-w-md bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200">
             <div class="text-center mb-8">
                 <div
                     class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-slate-900 text-amber-500 mb-4">
