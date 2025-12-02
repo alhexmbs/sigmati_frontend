@@ -2,9 +2,8 @@
     <div class="min-h-screen flex items-center justify-center bg-slate-100 p-4">
         <div class="w-full max-w-md bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200">
             <div class="text-center mb-8">
-                <div
-                    class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-slate-900 text-amber-500 mb-4">
-                    <Activity class="w-8 h-8" />
+                <div class="flex justify-center mb-6">
+                    <img src="/logito.jpg" alt="Logo SIGMATI" class="h-50 w-auto" />
                 </div>
                 <h1 class="text-2xl font-bold text-slate-900">Bienvenido a SIGMATI</h1>
                 <p class="text-slate-500 mt-2">Sistema de Gestión de Mantenimiento TI</p>
