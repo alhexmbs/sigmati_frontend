@@ -124,27 +124,15 @@
                     </div>
                 </div>
 
-                <!-- Checkboxes for Activos and Areas -->
+                <!-- Checkboxes for Areas and Activos -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-medium text-slate-700">Activos afectados</label>
-                        <div class="h-32 overflow-y-auto border border-slate-300 rounded-lg p-2 bg-slate-50">
-                            <div v-for="activo in activos" :key="activo.id_activo" class="flex items-center gap-2 mb-1">
-                                <input type="checkbox" :value="activo.id_activo" v-model="form.activos"
-                                    :id="'activo-' + activo.id_activo"
-                                    class="rounded border-slate-300 text-slate-900 focus:ring-slate-900">
-                                <label :for="'activo-' + activo.id_activo"
-                                    class="text-sm text-slate-700 cursor-pointer select-none">{{ activo.nombre
-                                    }}</label>
-                            </div>
-                            <div v-if="activos.length === 0" class="text-xs text-slate-400 italic text-center py-2">
-                                No hay activos disponibles
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Left Column: Areas -->
                     <div class="flex flex-col gap-1">
                         <label class="text-sm font-medium text-slate-700">Áreas afectadas</label>
-                        <div class="h-32 overflow-y-auto border border-slate-300 rounded-lg p-2 bg-slate-50">
+                        <div class="mb-2">
+                            <Input v-model="areaSearch" placeholder="Buscar área..." class="text-sm" />
+                        </div>
+                        <div class="h-48 overflow-y-auto border border-slate-300 rounded-lg p-2 bg-slate-50">
                             <div v-for="area in areas" :key="area.id_area" class="flex items-center gap-2 mb-1">
                                 <input type="checkbox" :value="area.id_area" v-model="form.areas"
                                     :id="'area-' + area.id_area"
@@ -155,6 +143,39 @@
                             <div v-if="areas.length === 0" class="text-xs text-slate-400 italic text-center py-2">
                                 No hay áreas disponibles
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Activos -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-sm font-medium text-slate-700">Activos afectados</label>
+                        <div class="mb-2">
+                            <select v-model="selectedAssetType"
+                                class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900">
+                                <option value="">Todos los tipos</option>
+                                <option v-for="tipo in tiposActivos" :key="tipo" :value="tipo">
+                                    {{ tipo }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="h-48 overflow-y-auto border border-slate-300 rounded-lg p-2 bg-slate-50">
+                            <div v-if="resourcesStore.loading" class="flex justify-center py-4">
+                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-slate-900"></div>
+                            </div>
+                            <template v-else>
+                                <div v-for="activo in filteredActivos" :key="activo.id_activo" class="flex items-center gap-2 mb-1">
+                                    <input type="checkbox" :value="activo.id_activo" v-model="form.activos"
+                                        :id="'activo-' + activo.id_activo"
+                                        class="rounded border-slate-300 text-slate-900 focus:ring-slate-900">
+                                    <label :for="'activo-' + activo.id_activo"
+                                        class="text-sm text-slate-700 cursor-pointer select-none">
+                                        {{ activo.nombre }} <span class="text-xs text-slate-400">({{ activo.tipo }})</span>
+                                    </label>
+                                </div>
+                                <div v-if="filteredActivos.length === 0" class="text-xs text-slate-400 italic text-center py-2">
+                                    {{ form.areas.length > 0 ? 'No hay activos para las áreas seleccionadas' : 'Seleccione un área para ver activos' }}
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -325,7 +346,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import MainLayout from '@/components/layout/MainLayout.vue';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
@@ -345,6 +366,7 @@ const mantenimientos = computed(() => store.mantenimientos);
 const tiposMantenimiento = computed(() => resourcesStore.tiposMantenimiento);
 const activos = computed(() => resourcesStore.activos);
 const areas = computed(() => resourcesStore.areas);
+const tiposActivos = computed(() => resourcesStore.tiposActivos);
 
 const minDateTime = computed(() => {
     const now = new Date();
@@ -370,6 +392,10 @@ const finalizeFile = ref(null);
 const finalizeNotes = ref('');
 const extendForm = ref({ nueva_fecha_fin: '', motivo: '' });
 
+// Search & Filter States
+const areaSearch = ref('');
+const selectedAssetType = ref('');
+
 const form = ref({
     id_mantenimiento: null,
     titulo: '',
@@ -383,6 +409,36 @@ const form = ref({
     areas: []
 });
 
+// Computed for filtered assets
+const filteredActivos = computed(() => {
+    if (!selectedAssetType.value) return activos.value;
+    return activos.value.filter(a => a.tipo === selectedAssetType.value);
+});
+
+// Watchers
+let searchTimeout;
+watch(areaSearch, (newValue) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        resourcesStore.fetchAreas(newValue);
+    }, 300); // Debounce search
+});
+
+watch(() => form.value.areas, async (newAreas) => {
+    if (newAreas.length > 0) {
+        await resourcesStore.fetchActivosForAreas(newAreas);
+    } else {
+        // If no areas selected, clear assets or fetch all? 
+        // Based on user request "listen solamente los activos de esa áreas", clearing seems appropriate or showing empty.
+        // However, if editing, we might need to fetch assets for existing areas.
+        // Let's clear for now to enforce area selection.
+        if (!isEditing.value) { // Only clear if not initializing edit
+             resourcesStore.activos = []; 
+        }
+    }
+}, { deep: true });
+
+
 onMounted(async () => {
     await Promise.all([
         store.fetchMantenimientos(),
@@ -395,20 +451,36 @@ const openModal = () => {
     isEditing.value = false;
     resetForm();
     isModalOpen.value = true;
+    resourcesStore.activos = []; // Clear assets initially
 };
 
 const closeModal = () => {
     isModalOpen.value = false;
 };
 
-const editMantenimiento = (item) => {
+const editMantenimiento = async (item) => {
     isEditing.value = true;
-    form.value = {
-        ...item,
-        activos: item.activos?.map(a => a.id_activo) || [],
-        areas: item.areas?.map(a => a.id_area) || []
-    };
-    isModalOpen.value = true;
+    
+    // Fetch full details to ensure we have all areas and assets
+    try {
+        const fullDetails = await store.fetchMantenimientoById(item.id_mantenimiento);
+        
+        form.value = {
+            ...fullDetails,
+            activos: fullDetails.activos?.map(a => a.id_activo) || [],
+            areas: fullDetails.areas?.map(a => a.id_area) || []
+        };
+        
+        // Pre-fetch assets for the selected areas so they appear in the list
+        if (form.value.areas.length > 0) {
+            await resourcesStore.fetchActivosForAreas(form.value.areas);
+        }
+        
+        isModalOpen.value = true;
+    } catch (error) {
+        console.error('Error fetching maintenance details for edit:', error);
+        alert('Error al cargar los detalles del mantenimiento.');
+    }
 };
 
 const deleteMantenimiento = async (id) => {
@@ -522,6 +594,8 @@ const resetForm = () => {
         activos: [],
         areas: []
     };
+    areaSearch.value = '';
+    selectedAssetType.value = '';
 };
 
 const formatDate = (dateString) => {
