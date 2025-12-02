@@ -62,6 +62,17 @@ export const useAlertasStore = defineStore('alertas', {
                 console.error("Error al reproducir sonido", e);
             }
         },
+        unlockAudio() {
+            // Intenta reproducir y pausar inmediatamente
+            // Esto "engaña" al navegador para que habilite el sonido futuro
+            audioAlerta.play().then(() => {
+                audioAlerta.pause();
+                audioAlerta.currentTime = 0;
+                console.log('Audio desbloqueado para esta sesión');
+            }).catch(e => {
+                // Si falla, no importa, lo intentará en el próximo clic
+            });
+        },
         async simularFalla(idActivo) {
             return api.post('/simulador/falla', { id_activo: idActivo });
         },
