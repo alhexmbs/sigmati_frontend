@@ -46,7 +46,7 @@ const handleLogin = async () => {
     try {
         await authStore.login(username.value, password.value);
     } catch (e) {
-        error.value = 'Credenciales inválidas o error de conexión';
+        error.value = 'Credenciales inválidas';
     } finally {
         loading.value = false;
     }

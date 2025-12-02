@@ -61,10 +61,11 @@
                                         <CheckCircle class="w-4 h-4" />
                                     </button>
                                     <button v-if="item.estado !== 'Finalizado'" @click="editMantenimiento(item)"
-                                        class="text-slate-400 hover:text-amber-600 transition-colors" title="Editar">
+                                        class="text-slate-400 hover:text-accent transition-colors" title="Editar">
                                         <Edit2 class="w-4 h-4" />
                                     </button>
-                                    <button v-if="item.estado !== 'Finalizado'" @click="deleteMantenimiento(item.id_mantenimiento)"
+                                    <button v-if="item.estado !== 'Finalizado'"
+                                        @click="deleteMantenimiento(item.id_mantenimiento)"
                                         class="text-slate-400 hover:text-red-600 transition-colors" title="Eliminar">
                                         <Trash2 class="w-4 h-4" />
                                     </button>
@@ -194,7 +195,7 @@
         <Modal :isOpen="isExtendModalOpen" title="Extender mantenimiento" @close="closeExtendModal">
             <form @submit.prevent="handleExtend" class="space-y-4">
                 <p class="text-sm text-slate-600">Extender tiempo para: <strong>{{ selectedMantenimiento?.titulo
-                        }}</strong></p>
+                }}</strong></p>
 
                 <Input v-model="extendForm.nueva_fecha_fin" label="Nueva fecha de finalización" type="datetime-local"
                     required />
@@ -286,8 +287,9 @@
                     </div>
                     <div>
                         <p class="text-slate-500">Fin real</p>
-                        <p class="font-medium" :class="{ 'text-green-600': maintenanceDetails.fecha_finalizacion_real }">{{
-                            formatDate(maintenanceDetails.fecha_finalizacion_real) || '-' }}</p>
+                        <p class="font-medium"
+                            :class="{ 'text-green-600': maintenanceDetails.fecha_finalizacion_real }">{{
+                                formatDate(maintenanceDetails.fecha_finalizacion_real) || '-' }}</p>
                     </div>
                 </div>
 

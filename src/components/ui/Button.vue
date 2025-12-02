@@ -26,7 +26,7 @@ const props = defineProps({
 const variantClasses = {
     primary: 'bg-slate-900 text-white hover:bg-slate-800 focus:ring-slate-900',
     secondary: 'bg-transparent border border-slate-900 text-slate-900 hover:bg-slate-50 focus:ring-slate-900',
-    action: 'bg-amber-600 text-white hover:bg-amber-700 focus:ring-amber-600',
+    action: 'bg-accent text-white hover:bg-accent/90 focus:ring-accent',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-600'
 };
 </script>

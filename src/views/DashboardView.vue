@@ -58,38 +58,38 @@ import { Server, AlertTriangle, Wrench, Bell, BarChart3, PieChart } from 'lucide
 
 const store = useDashboardStore();
 // Usamos un objeto vacío por defecto para evitar errores si el store devuelve undefined
-const resumen = computed(() => store.resumen || {}); 
+const resumen = computed(() => store.resumen || {});
 const graficos = computed(() => store.graficos || {});
 
 // CORRECCIÓN: Usamos Optional Chaining (?.) y valores por defecto (|| 0)
 const stats = computed(() => [
-    { 
-        label: 'Total de servicios', 
+    {
+        label: 'Total de servicios',
         value: resumen.value?.totalServicios || 0, // Si no existe, muestra 0
-        icon: Server, 
-        iconBg: 'bg-blue-50', 
-        iconColor: 'text-blue-600' 
+        icon: Server,
+        iconBg: 'bg-blue-50',
+        iconColor: 'text-blue-600'
     },
-    { 
-        label: 'Servicios caídos', 
-        value: resumen.value?.serviciosCaidos || 0, 
-        icon: AlertTriangle, 
-        iconBg: 'bg-red-50', 
-        iconColor: 'text-red-600' 
+    {
+        label: 'Servicios caídos',
+        value: resumen.value?.serviciosCaidos || 0,
+        icon: AlertTriangle,
+        iconBg: 'bg-red-50',
+        iconColor: 'text-red-600'
     },
-    { 
-        label: 'Mantenimientos', 
-        value: resumen.value?.mantenimientosPendientes || 0, 
-        icon: Wrench, 
-        iconBg: 'bg-amber-50', 
-        iconColor: 'text-amber-600' 
+    {
+        label: 'Mantenimientos',
+        value: resumen.value?.mantenimientosPendientes || 0,
+        icon: Wrench,
+        iconBg: 'bg-accent/10',
+        iconColor: 'text-accent'
     },
-    { 
-        label: 'Alertas hoy', 
-        value: resumen.value?.alertasHoy || 0, 
-        icon: Bell, 
-        iconBg: 'bg-indigo-50', 
-        iconColor: 'text-indigo-600' 
+    {
+        label: 'Alertas hoy',
+        value: resumen.value?.alertasHoy || 0,
+        icon: Bell,
+        iconBg: 'bg-indigo-50',
+        iconColor: 'text-indigo-600'
     },
 ]);
 
