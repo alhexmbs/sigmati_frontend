@@ -1,10 +1,12 @@
 <template>
   <router-view />
+  <AlertToast />
 </template>
 
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
 import { useAlertasStore } from '@/stores/alertas';
+import AlertToast from '@/components/ui/AlertToast.vue';
 
 const alertasStore = useAlertasStore();
 

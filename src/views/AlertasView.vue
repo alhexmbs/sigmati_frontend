@@ -16,23 +16,25 @@
 
         <div class="space-y-4">
             <transition-group name="list">
-                <div v-for="alerta in alertas" :key="alerta.id || alerta.timestamp"
+                <div v-for="alerta in alertas" :key="alerta.id_alerta || alerta.fecha"
                     class="bg-white p-4 rounded-lg shadow-sm border-l-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all duration-300"
-                    :class="getAlertClass(alerta.nivel)">
+                    :class="getAlertClass(alerta.severidad)">
                     <div class="flex items-start gap-4">
-                        <div :class="getIconBgClass(alerta.nivel)" class="p-2 rounded-lg shrink-0">
-                            <AlertTriangle v-if="alerta.nivel === 'CRITICAL'" class="w-6 h-6 text-red-600" />
+                        <div :class="getIconBgClass(alerta.severidad)" class="p-2 rounded-lg shrink-0">
+                            <AlertTriangle v-if="alerta.severidad === 'CRITICAL'" class="w-6 h-6 text-red-600" />
                             <Info v-else class="w-6 h-6 text-blue-600" />
                         </div>
                         <div>
                             <h3 class="font-semibold text-slate-900">{{ alerta.mensaje }}</h3>
-                            <p class="text-sm text-slate-500 mt-1">Activo: {{ getActivoName(alerta.id_activo) }}</p>
-                            <p class="text-xs text-slate-400 mt-2">{{ new Date(alerta.timestamp).toLocaleString() }}</p>
+                            <p class="text-sm text-slate-500 mt-1">
+                                Activo: {{ alerta.id_activo ? getActivoName(alerta.id_activo) : 'General / Servicio Externo' }}
+                            </p>
+                            <p class="text-xs text-slate-400 mt-2">{{ new Date(alerta.fecha).toLocaleString() }}</p>
                         </div>
                     </div>
-                    <span :class="getBadgeClass(alerta.nivel)"
+                    <span :class="getBadgeClass(alerta.severidad)"
                         class="px-2.5 py-0.5 rounded-full text-xs font-medium border self-start md:self-center">
-                        {{ alerta.nivel }}
+                        {{ alerta.severidad }}
                     </span>
                 </div>
             </transition-group>
@@ -65,29 +67,29 @@ onMounted(() => {
     resourcesStore.fetchActivos();
 });
 
-const getActivoName = (id) => {
-    const activo = activos.value.find(a => a.id === id);
-    return activo ? activo.nombre : `ID: ${id}`;
+const getActivoName = (id_activo) => {
+    const activo = activos.value.find(a => a.id === id_activo);
+    return activo ? activo.nombre : `ID: ${id_activo}`;
 };
 
-const getAlertClass = (nivel) => {
-    switch (nivel) {
+const getAlertClass = (severidad) => {
+    switch (severidad) {
         case 'CRITICAL': return 'border-l-red-500';
         case 'WARNING': return 'border-l-amber-500';
         default: return 'border-l-blue-500';
     }
 };
 
-const getIconBgClass = (nivel) => {
-    switch (nivel) {
+const getIconBgClass = (severidad) => {
+    switch (severidad) {
         case 'CRITICAL': return 'bg-red-50';
         case 'WARNING': return 'bg-amber-50';
         default: return 'bg-blue-50';
     }
 };
 
-const getBadgeClass = (nivel) => {
-    switch (nivel) {
+const getBadgeClass = (severidad) => {
+    switch (severidad) {
         case 'CRITICAL': return 'bg-red-50 text-red-700 border-red-100';
         case 'WARNING': return 'bg-amber-50 text-amber-700 border-amber-100';
         default: return 'bg-blue-50 text-blue-700 border-blue-100';

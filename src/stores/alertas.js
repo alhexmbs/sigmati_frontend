@@ -1,13 +1,14 @@
 import { defineStore } from 'pinia';
 import api from '../services/api';
 
-const audioAlerta = new Audio('/alert.mp3');
+const audioAlerta = new Audio('/alerthl.mp3');
 
 export const useAlertasStore = defineStore('alertas', {
     state: () => ({
         alertas: [],
         socket: null,
-        connected: false
+        connected: false,
+        alertaPopup: null
     }),
     actions: {
         async fetchAlertas() {
@@ -35,6 +36,19 @@ export const useAlertasStore = defineStore('alertas', {
                         this.alertas.unshift(message.data);
                         if (message.data.severidad === 'CRITICAL') {
                             this.playAudio();
+
+                            this.alertaPopup = {
+                                ...message.data,
+                                id: Date.now()
+                            };
+
+                            // Opcional: Auto-cerrar después de 10 segundos
+                            setTimeout(() => {
+                                // Solo cerrar si sigue siendo la misma alerta
+                                if (this.alertaPopup && this.alertaPopup.id === message.data.id) {
+                                    this.alertaPopup = null;
+                                }
+                            }, 10000);
                         }
                     }
                 } catch (e) {
@@ -72,6 +86,9 @@ export const useAlertasStore = defineStore('alertas', {
             }).catch(e => {
                 // Si falla, no importa, lo intentará en el próximo clic
             });
+        },
+        cerrarPopup() {
+            this.alertaPopup = null;
         },
         async simularFalla(idActivo) {
             return api.post('/simulador/falla', { id_activo: idActivo });
