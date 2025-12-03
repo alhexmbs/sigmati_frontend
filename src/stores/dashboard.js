@@ -12,7 +12,12 @@ export const useDashboardStore = defineStore('dashboard', {
         graficos: {
             alertasPorDia: [],
             mantenimientosPorTipo: [],
-            estadoActivos: []
+            estadoActivos: [],
+            kpis: {
+                cumplimientoPreventivo: "0",
+                evidenciaRegistrada: "0",
+                preventivosPorServicio: []
+            }
         },
         loading: false
     }),

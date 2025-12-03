@@ -16,7 +16,7 @@
                         class="relative inline-flex rounded-full h-3 w-3"></span>
                 </span>
                 <span class="text-sm text-slate-500">{{ connected ? 'Conectado en tiempo real' : 'Desconectado'
-                }}</span>
+                    }}</span>
             </div>
         </div>
 
@@ -33,7 +33,8 @@
                         <div>
                             <h3 class="font-semibold text-slate-900">{{ alerta.mensaje }}</h3>
                             <p class="text-sm text-slate-500 mt-1">
-                                Activo: {{ alerta.id_activo ? getActivoName(alerta.id_activo) : 'General / Servicio externo' }}
+                                Activo: {{ alerta.nombre_activo || (alerta.id_activo ? getActivoName(alerta.id_activo) :
+                                'General / Servicio externo') }}
                             </p>
                             <p class="text-xs text-slate-400 mt-2">{{ new Date(alerta.fecha).toLocaleString() }}</p>
                         </div>
