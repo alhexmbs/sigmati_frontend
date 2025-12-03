@@ -25,7 +25,7 @@
                         <tr v-for="item in mantenimientos" :key="item.id_mantenimiento"
                             class="bg-white border-b border-slate-100 hover:bg-slate-50 transition-colors">
                             <td class="px-6 py-4 font-medium text-slate-900">{{ item.titulo }}</td>
-                            <td class="px-6 py-4">{{ item.tipo_mantenimiento?.nombre || 'General' }}</td>
+                            <td class="px-6 py-4">{{ item.tipo }}</td>
                             <td class="px-6 py-4">
                                 <span :class="getPrioridadClass(item.prioridad)"
                                     class="px-2.5 py-0.5 rounded-full text-xs font-medium border">
