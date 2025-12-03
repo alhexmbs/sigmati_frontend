@@ -67,6 +67,5 @@ const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Mantenimientos', path: '/mantenimientos', icon: Wrench },
     { name: 'Alertas', path: '/alertas', icon: Bell },
-    { name: 'Simulador', path: '/simulador', icon: MonitorPlay },
 ];
 </script>
