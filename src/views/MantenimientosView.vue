@@ -98,8 +98,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input v-model="form.fecha_inicio" label="Fecha de inicio" type="datetime-local" :min="minDateTime"
                         required />
-                    <Input v-model="form.fecha_fin" label="Fecha de fin estimada" type="datetime-local"
-                        :min="form.fecha_inicio || minDateTime" required />
+                    <Input v-if="!isEditing" v-model="form.fecha_fin" label="Fecha de fin estimada"
+                        type="datetime-local" :min="form.fecha_inicio || minDateTime" required />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -163,17 +163,21 @@
                                 <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-slate-900"></div>
                             </div>
                             <template v-else>
-                                <div v-for="activo in filteredActivos" :key="activo.id_activo" class="flex items-center gap-2 mb-1">
+                                <div v-for="activo in filteredActivos" :key="activo.id_activo"
+                                    class="flex items-center gap-2 mb-1">
                                     <input type="checkbox" :value="activo.id_activo" v-model="form.activos"
                                         :id="'activo-' + activo.id_activo"
                                         class="rounded border-slate-300 text-slate-900 focus:ring-slate-900">
                                     <label :for="'activo-' + activo.id_activo"
                                         class="text-sm text-slate-700 cursor-pointer select-none">
-                                        {{ activo.nombre }} <span class="text-xs text-slate-400">({{ activo.tipo }})</span>
+                                        {{ activo.nombre }} <span class="text-xs text-slate-400">({{ activo.tipo
+                                        }})</span>
                                     </label>
                                 </div>
-                                <div v-if="filteredActivos.length === 0" class="text-xs text-slate-400 italic text-center py-2">
-                                    {{ form.areas.length > 0 ? 'No hay activos para las áreas seleccionadas' : 'Seleccione un área para ver activos' }}
+                                <div v-if="filteredActivos.length === 0"
+                                    class="text-xs text-slate-400 italic text-center py-2">
+                                    {{ form.areas.length > 0 ? 'No hay activos para las áreas seleccionadas' :
+                                        'Seleccione un área para ver activos' }}
                                 </div>
                             </template>
                         </div>
@@ -181,8 +185,14 @@
                 </div>
 
                 <div class="flex justify-end gap-3 mt-6">
-                    <Button variant="secondary" type="button" @click="closeModal">Cancelar</Button>
-                    <Button variant="primary" type="submit">{{ isEditing ? 'Actualizar' : 'Crear' }}</Button>
+                    <Button variant="secondary" type="button" @click="closeModal"
+                        :disabled="isSubmitting">Cancelar</Button>
+                    <Button variant="primary" type="submit" :disabled="isSubmitting || form.activos.length === 0"
+                        class="flex items-center gap-2">
+                        <div v-if="isSubmitting" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white">
+                        </div>
+                        {{ isSubmitting ? 'Procesando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+                    </Button>
                 </div>
             </form>
         </Modal>
@@ -381,6 +391,7 @@ const isEditing = ref(false);
 const isFinalizeModalOpen = ref(false);
 const isExtendModalOpen = ref(false);
 const isDetailsModalOpen = ref(false);
+const isSubmitting = ref(false);
 
 // Selected Item & Loading
 const selectedMantenimiento = ref(null);
@@ -433,7 +444,7 @@ watch(() => form.value.areas, async (newAreas) => {
         // However, if editing, we might need to fetch assets for existing areas.
         // Let's clear for now to enforce area selection.
         if (!isEditing.value) { // Only clear if not initializing edit
-             resourcesStore.activos = []; 
+            resourcesStore.activos = [];
         }
     }
 }, { deep: true });
@@ -460,22 +471,23 @@ const closeModal = () => {
 
 const editMantenimiento = async (item) => {
     isEditing.value = true;
-    
+
     // Fetch full details to ensure we have all areas and assets
     try {
         const fullDetails = await store.fetchMantenimientoById(item.id_mantenimiento);
-        
+
         form.value = {
             ...fullDetails,
+            fecha_inicio: fullDetails.fecha_inicio ? new Date(fullDetails.fecha_inicio).toISOString().slice(0, 16) : '',
             activos: fullDetails.activos?.map(a => a.id_activo) || [],
             areas: fullDetails.areas?.map(a => a.id_area) || []
         };
-        
+
         // Pre-fetch assets for the selected areas so they appear in the list
         if (form.value.areas.length > 0) {
             await resourcesStore.fetchActivosForAreas(form.value.areas);
         }
-        
+
         isModalOpen.value = true;
     } catch (error) {
         console.error('Error fetching maintenance details for edit:', error);
@@ -499,12 +511,25 @@ const handleSubmit = async () => {
         return;
     }
 
-    if (isEditing.value) {
-        await store.updateMantenimiento(form.value.id_mantenimiento, form.value);
-    } else {
-        await store.createMantenimiento(form.value);
+    if (form.value.activos.length === 0) {
+        alert('Debe seleccionar al menos un activo.');
+        return;
     }
-    closeModal();
+
+    isSubmitting.value = true;
+    try {
+        if (isEditing.value) {
+            await store.updateMantenimiento(form.value.id_mantenimiento, form.value);
+        } else {
+            await store.createMantenimiento(form.value);
+        }
+        closeModal();
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        alert('Ocurrió un error al procesar la solicitud.');
+    } finally {
+        isSubmitting.value = false;
+    }
 };
 
 // --- Finalize Modal ---
