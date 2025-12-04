@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import api from '../services/api';
 
-const audioAlerta = new Audio('/alerthl.mp3');
+const audioAlerta = new Audio('/alerta.mp3');
 
 export const useAlertasStore = defineStore('alertas', {
     state: () => ({

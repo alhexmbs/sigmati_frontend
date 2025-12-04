@@ -4,6 +4,7 @@ import DashboardView from '../views/DashboardView.vue'
 import MantenimientosView from '../views/MantenimientosView.vue'
 import AlertasView from '../views/AlertasView.vue'
 import SimuladorView from '../views/SimuladorView.vue'
+import ReportesView from '../views/ReportesView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,6 +36,12 @@ const router = createRouter({
       path: '/simulador',
       name: 'simulador',
       component: SimuladorView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/reportes',
+      name: 'reportes',
+      component: ReportesView,
       meta: { requiresAuth: true }
     }
   ]

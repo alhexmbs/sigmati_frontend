@@ -50,6 +50,7 @@ import {
     Activity,
     User,
     MonitorPlay,
+    FileBarChart,
     X
 } from 'lucide-vue-next';
 
@@ -67,5 +68,6 @@ const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Mantenimientos', path: '/mantenimientos', icon: Wrench },
     { name: 'Alertas', path: '/alertas', icon: Bell },
+    { name: 'Reportes', path: '/reportes', icon: FileBarChart },
 ];
 </script>
