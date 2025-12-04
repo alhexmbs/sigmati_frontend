@@ -2,10 +2,16 @@
     <MainLayout>
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h1 class="text-2xl font-bold text-slate-900">Gestión de mantenimientos</h1>
-            <Button variant="primary" @click="openModal" class="w-full md:w-auto">
-                <Plus class="w-4 h-4 mr-2 inline-block" />
-                Nuevo mantenimiento
-            </Button>
+            <div class="flex gap-2 w-full md:w-auto">
+                <Button variant="danger" @click="openEmergencyModal" class="flex-1 md:flex-none">
+                    <AlertTriangle class="w-4 h-4 mr-2 inline-block" />
+                    Emergencia
+                </Button>
+                <Button variant="primary" @click="openModal" class="flex-1 md:flex-none">
+                    <Plus class="w-4 h-4 mr-2 inline-block" />
+                    Nuevo
+                </Button>
+            </div>
         </div>
 
         <Card class="overflow-hidden p-0">
@@ -99,7 +105,8 @@
                     <Input v-model="form.fecha_inicio" label="Fecha de inicio" type="datetime-local" :min="minDateTime"
                         required />
                     <Input v-if="!isEditing" v-model="form.fecha_fin" label="Fecha de fin estimada"
-                        type="datetime-local" :min="form.fecha_inicio || minDateTime" required />
+                        type="datetime-local" :min="form.fecha_inicio || minDateTime" :required="!isCorrectivo"
+                        :placeholder="isCorrectivo ? 'Indefinido (Opcional)' : ''" />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -171,7 +178,7 @@
                                     <label :for="'activo-' + activo.id_activo"
                                         class="text-sm text-slate-700 cursor-pointer select-none">
                                         {{ activo.nombre }} <span class="text-xs text-slate-400">({{ activo.tipo
-                                        }})</span>
+                                            }})</span>
                                     </label>
                                 </div>
                                 <div v-if="filteredActivos.length === 0"
@@ -226,7 +233,7 @@
         <Modal :isOpen="isExtendModalOpen" title="Extender mantenimiento" @close="closeExtendModal">
             <form @submit.prevent="handleExtend" class="space-y-4">
                 <p class="text-sm text-slate-600">Extender tiempo para: <strong>{{ selectedMantenimiento?.titulo
-                }}</strong></p>
+                        }}</strong></p>
 
                 <Input v-model="extendForm.nueva_fecha_fin" label="Nueva fecha de finalización" type="datetime-local"
                     required />
@@ -366,7 +373,7 @@ import CameraCapture from '@/components/ui/CameraCapture.vue';
 import { useMantenimientosStore } from '@/stores/mantenimientos';
 import { useResourcesStore } from '@/stores/resources';
 import { useAuthStore } from '@/stores/auth';
-import { Plus, Edit2, Trash2, CheckCircle, Clock, Eye } from 'lucide-vue-next';
+import { Plus, Edit2, Trash2, CheckCircle, Clock, Eye, AlertTriangle } from 'lucide-vue-next';
 
 const store = useMantenimientosStore();
 const resourcesStore = useResourcesStore();
@@ -426,6 +433,11 @@ const filteredActivos = computed(() => {
     return activos.value.filter(a => a.tipo === selectedAssetType.value);
 });
 
+const isCorrectivo = computed(() => {
+    const type = tiposMantenimiento.value.find(t => t.id_tipo_mantenimiento === form.value.id_tipo_mantenimiento);
+    return type && type.nombre.toLowerCase().includes('correctivo');
+});
+
 // Watchers
 let searchTimeout;
 watch(areaSearch, (newValue) => {
@@ -463,6 +475,31 @@ const openModal = () => {
     resetForm();
     isModalOpen.value = true;
     resourcesStore.activos = []; // Clear assets initially
+};
+
+const openEmergencyModal = () => {
+    isEditing.value = false;
+    resetForm();
+
+    // Pre-fill for Emergency
+    form.value.titulo = 'Mantenimiento de emergencia';
+    form.value.descripcion = 'Mantenimiento correctivo generado por emergencia.';
+    form.value.prioridad = 'Alta';
+
+    // Set start date to now
+    const now = new Date();
+    // Adjust to local ISO string for input[type="datetime-local"]
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    form.value.fecha_inicio = now.toISOString().slice(0, 16);
+
+    // Try to find "Correctivo" type
+    const correctivoType = tiposMantenimiento.value.find(t => t.nombre.toLowerCase().includes('correctivo'));
+    if (correctivoType) {
+        form.value.id_tipo_mantenimiento = correctivoType.id_tipo_mantenimiento;
+    }
+
+    isModalOpen.value = true;
+    resourcesStore.activos = [];
 };
 
 const closeModal = () => {
@@ -508,6 +545,12 @@ const handleSubmit = async () => {
     // Allow a small buffer (e.g., 1 minute) for "now" comparison to avoid frustration with seconds
     if (fechaInicio < new Date(now.getTime() - 60000)) {
         alert('La fecha de inicio no puede ser anterior al momento actual.');
+        return;
+    }
+
+    // Validate fecha_fin only if NOT correctivo
+    if (!isCorrectivo.value && !form.value.fecha_fin) {
+        alert('La fecha de fin es requerida para este tipo de mantenimiento.');
         return;
     }
 
