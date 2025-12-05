@@ -47,7 +47,18 @@
                             <td class="px-6 py-4">
                                 <div class="flex flex-col text-xs">
                                     <span>Inicio: {{ formatDate(item.fecha_inicio) }}</span>
-                                    <span>Fin: {{ formatDate(item.fecha_fin) }}</span>
+
+                                    <span v-if="item.fecha_finalizacion_real" class="text-green-600 font-medium">
+                                        Fin (Real): {{ formatDate(item.fecha_finalizacion_real) }}
+                                    </span>
+
+                                    <span v-else-if="item.fecha_fin" class="text-gray-600">
+                                        Fin (Est.): {{ formatDate(item.fecha_fin) }}
+                                    </span>
+
+                                    <span v-else class="text-gray-400 italic">
+                                        Fin: Sin especificar
+                                    </span>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -178,7 +189,7 @@
                                     <label :for="'activo-' + activo.id_activo"
                                         class="text-sm text-slate-700 cursor-pointer select-none">
                                         {{ activo.nombre }} <span class="text-xs text-slate-400">({{ activo.tipo
-                                            }})</span>
+                                        }})</span>
                                     </label>
                                 </div>
                                 <div v-if="filteredActivos.length === 0"
@@ -223,8 +234,13 @@
                 </div>
 
                 <div class="flex justify-end gap-3 mt-6">
-                    <Button variant="secondary" type="button" @click="closeFinalizeModal">Cancelar</Button>
-                    <Button variant="primary" type="submit" :disabled="!finalizeFile">Finalizar</Button>
+                    <Button variant="secondary" type="button" @click="closeFinalizeModal"
+                        :disabled="isFinalizing">Cancelar</Button>
+                    <Button variant="primary" type="submit" :disabled="!finalizeFile || isFinalizing">
+                        <div v-if="isFinalizing" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2">
+                        </div>
+                        {{ isFinalizing ? 'Finalizando...' : 'Finalizar' }}
+                    </Button>
                 </div>
             </form>
         </Modal>
@@ -233,7 +249,7 @@
         <Modal :isOpen="isExtendModalOpen" title="Extender mantenimiento" @close="closeExtendModal">
             <form @submit.prevent="handleExtend" class="space-y-4">
                 <p class="text-sm text-slate-600">Extender tiempo para: <strong>{{ selectedMantenimiento?.titulo
-                        }}</strong></p>
+                }}</strong></p>
 
                 <Input v-model="extendForm.nueva_fecha_fin" label="Nueva fecha de finalización" type="datetime-local"
                     required />
@@ -300,7 +316,7 @@
                         </ul>
                     </div>
                     <div class="bg-slate-50 p-3 rounded-lg">
-                        <p class="text-xs font-medium text-slate-500 uppercase mb-2">Áreas Afectadas</p>
+                        <p class="text-xs font-medium text-slate-500 uppercase mb-2">Áreas afectadas</p>
                         <ul class="space-y-1">
                             <li v-for="area in maintenanceDetails.areas" :key="area.id_area"
                                 class="text-sm text-slate-700 flex items-center gap-2">
@@ -593,16 +609,31 @@ const handleCameraCapture = (blob) => {
     finalizeFile.value = blob;
 };
 
+const isFinalizing = ref(false);
+
 const handleFinalize = async () => {
     if (!selectedMantenimiento.value || !finalizeFile.value) return;
 
-    const formData = new FormData();
-    formData.append('imagen', finalizeFile.value, 'evidencia.png');
-    formData.append('id_usuario_responsable', authStore.user?.id || 1);
-    formData.append('notas_resolucion', finalizeNotes.value);
+    isFinalizing.value = true;
+    try {
+        const formData = new FormData();
+        formData.append('imagen', finalizeFile.value, 'evidencia.png');
+        formData.append('id_usuario_responsable', authStore.user?.id || 1);
+        formData.append('notas_resolucion', finalizeNotes.value);
 
-    await store.finalizarMantenimiento(selectedMantenimiento.value.id_mantenimiento, formData);
-    closeFinalizeModal();
+        // Enviar fecha actual ajustada a la zona horaria local (para que se guarde "tal cual" en BD)
+        const now = new Date();
+        const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString();
+        formData.append('fecha_finalizacion_real', localIso);
+
+        await store.finalizarMantenimiento(selectedMantenimiento.value.id_mantenimiento, formData);
+        closeFinalizeModal();
+    } catch (error) {
+        console.error('Error finalizing maintenance:', error);
+        alert('Error al finalizar el mantenimiento.');
+    } finally {
+        isFinalizing.value = false;
+    }
 };
 
 // --- Extend Modal ---
@@ -668,8 +699,14 @@ const resetForm = () => {
 
 const formatDate = (dateString) => {
     if (!dateString) return '';
-    return new Date(dateString).toLocaleString();
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('es-PE', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+        timeZone: 'UTC' // Importante para mantener tu hora correcta
+    }).format(date);
 };
+
 
 const getPrioridadClass = (prioridad) => {
     switch (prioridad) {

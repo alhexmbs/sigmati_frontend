@@ -375,7 +375,7 @@ const downloadPDF = () => {
 
     // Table 2: Caídas (Critical)
     const finalY = doc.lastAutoTable.finalY || 50;
-    doc.text('Caídas (Alertas Críticas)', 14, finalY + 15);
+    doc.text('Caídas (Alertas críticas)', 14, finalY + 15);
 
     const tableDataCaidas = reportesData.value.activosMasCaidas.map(item => [
         item.nombre,
