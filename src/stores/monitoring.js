@@ -17,6 +17,16 @@ export const useMonitoringStore = defineStore('monitoring', {
             } finally {
                 this.loading = false;
             }
+        },
+        async createServer(serverData) {
+            try {
+                const response = await api.post('/activos', serverData);
+                await this.fetchMonitoringData(); // Refresh list
+                return response.data; // Return full response to get the ID
+            } catch (error) {
+                console.error('Error creating server:', error);
+                throw error;
+            }
         }
     }
 });

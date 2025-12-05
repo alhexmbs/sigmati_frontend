@@ -2,12 +2,7 @@
     <MainLayout>
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h1 class="text-2xl font-bold text-slate-900">Monitor de alertas</h1>
-            <a href="http://69.62.99.107/zabbix/zabbix.php?action=dashboard.view&dashboardid=1&from=now-1h&to=now"
-                target="_blank"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-accent text-sidebar rounded-lg hover:bg-accent/90 transition-colors font-medium shadow-sm">
-                <span>Ir al tablero Zabbix</span>
-                <ExternalLink class="w-4 h-4" />
-            </a>
+            
             <div class="flex items-center gap-2">
                 <span class="relative flex h-3 w-3">
                     <span v-if="connected"
@@ -60,7 +55,7 @@ import { onMounted, computed } from 'vue';
 import MainLayout from '@/components/layout/MainLayout.vue';
 import { useAlertasStore } from '@/stores/alertas';
 import { useResourcesStore } from '@/stores/resources';
-import { AlertTriangle, Info, BellOff, ExternalLink } from 'lucide-vue-next';
+import { AlertTriangle, Info, BellOff } from 'lucide-vue-next';
 
 const store = useAlertasStore();
 const resourcesStore = useResourcesStore();

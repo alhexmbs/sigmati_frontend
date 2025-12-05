@@ -51,7 +51,8 @@ import {
     User,
     MonitorPlay,
     FileBarChart,
-    X
+    X,
+    Server
 } from 'lucide-vue-next';
 
 defineProps({
@@ -66,6 +67,7 @@ const user = computed(() => authStore.user);
 
 const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+    { name: 'Monitoreo', path: '/monitoreo', icon: Server },
     { name: 'Mantenimientos', path: '/mantenimientos', icon: Wrench },
     { name: 'Alertas', path: '/alertas', icon: Bell },
     { name: 'Reportes', path: '/reportes', icon: FileBarChart },

@@ -9,20 +9,7 @@
             <h2 class="text-lg md:text-xl font-semibold text-slate-800 truncate">{{ pageTitle }}</h2>
         </div>
 
-        <!-- Server Status Monitor -->
-        <div class="hidden lg:flex items-center gap-4 mr-auto ml-8">
-            <div v-for="server in servers" :key="server.id_activo"
-                class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200">
-                <Server class="w-4 h-4" :class="server.estado === 'Operativo' ? 'text-green-600' : 'text-red-600'" />
-                <div class="flex flex-col leading-none">
-                    <span class="text-xs font-semibold text-slate-700">{{ server.nombre }}</span>
-                    <span class="text-[10px] font-medium"
-                        :class="server.estado === 'Operativo' ? 'text-green-600' : 'text-red-600'">
-                        {{ server.estado }}
-                    </span>
-                </div>
-            </div>
-        </div>
+        <!-- Server Status Monitor Removed -->
 
         <div class="flex items-center gap-4">
             <button @click="handleLogout"
@@ -38,12 +25,10 @@
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import { useMonitoringStore } from '@/stores/monitoring';
-import { LogOut, Menu, Server } from 'lucide-vue-next';
+import { LogOut, Menu } from 'lucide-vue-next';
 
 const route = useRoute();
 const authStore = useAuthStore();
-const monitoringStore = useMonitoringStore();
 
 defineEmits(['toggle-sidebar']);
 
@@ -52,14 +37,9 @@ const pageTitle = computed(() => {
         case 'dashboard': return 'Dashboard';
         case 'mantenimientos': return 'Gestión de mantenimientos';
         case 'alertas': return 'Monitor de alertas';
+        case 'monitoreo': return 'Monitoreo de servidores';
         default: return 'SIGMATI';
     }
-});
-
-const servers = computed(() => monitoringStore.servers);
-
-onMounted(() => {
-    monitoringStore.fetchMonitoringData();
 });
 
 const handleLogout = () => {

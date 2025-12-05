@@ -29,6 +29,12 @@
                         title="Limpiar filtros">
                         <RotateCcw class="w-4 h-4" />
                     </button>
+                    <button @click="downloadPDF"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                        title="Descargar PDF">
+                        <FileDown class="w-4 h-4" />
+                        <span class="hidden md:inline">PDF</span>
+                    </button>
                 </div>
             </div>
         </Card>
@@ -92,8 +98,12 @@
 
             <!-- Bottom Row: Top Assets Table -->
             <Card class="overflow-hidden">
-                <div class="p-6 border-b border-slate-100">
-                    <h3 class="text-lg font-semibold text-slate-800">Activos con mayor incidencia</h3>
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-slate-800">Activos con mayor incidencia (Mantenimientos)</h3>
+                    <span v-if="filters.fechaInicio || filters.fechaFin" class="text-sm text-slate-500">
+                        Mostrando datos del {{ filters.fechaInicio || 'Inicio' }} al {{ filters.fechaFin || 'Actualidad'
+                        }}
+                    </span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full">
@@ -104,7 +114,13 @@
                                     Activo</th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                    Cantidad de Mantenimientos</th>
+                                    Marca</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                    Modelo</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                    Cantidad de mantenimientos</th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                                     Barra</th>
@@ -120,6 +136,12 @@
                                         </div>
                                         <span class="font-medium text-slate-900">{{ item.nombre }}</span>
                                     </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                                    {{ item.marca || 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                                    {{ item.modelo || 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span
@@ -139,6 +161,67 @@
                     </table>
                 </div>
             </Card>
+
+            <!-- Activos con más caídas (Critical) -->
+            <Card class="overflow-hidden mt-8">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-slate-800">Activos con mayor número de caídas (Critical)</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                    Activo</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                    Marca</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                    Modelo</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                    Cantidad de caídas</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                                    Barra</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-slate-100">
+                            <tr v-for="(item, index) in reportesData.activosMasCaidas" :key="index"
+                                class="hover:bg-slate-50/50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 bg-red-50 rounded-lg">
+                                            <Server class="w-4 h-4 text-red-600" />
+                                        </div>
+                                        <span class="font-medium text-slate-900">{{ item.nombre }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                                    {{ item.marca || 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                                    {{ item.modelo || 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                                        {{ item.cantidad }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap w-1/3">
+                                    <div class="w-full bg-slate-100 rounded-full h-2">
+                                        <div class="bg-red-500 h-2 rounded-full"
+                                            :style="{ width: `${(parseInt(item.cantidad) / maxCriticalCount) * 100}%` }">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </Card>
         </div>
     </MainLayout>
 </template>
@@ -148,7 +231,7 @@ import { onMounted, computed, ref } from 'vue';
 import MainLayout from '@/components/layout/MainLayout.vue';
 import Card from '@/components/ui/Card.vue';
 import { useReportesStore } from '@/stores/reportes';
-import { Filter, RotateCcw, Clock, Server } from 'lucide-vue-next';
+import { Filter, RotateCcw, Clock, Server, FileDown } from 'lucide-vue-next';
 import {
     Chart as ChartJS,
     Title,
@@ -160,6 +243,8 @@ import {
     ArcElement
 } from 'chart.js';
 import { Bar, Doughnut } from 'vue-chartjs';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
@@ -206,6 +291,12 @@ const maxAssetCount = computed(() => {
     return Math.max(...data.map(item => parseInt(item.cantidad)));
 });
 
+const maxCriticalCount = computed(() => {
+    const data = reportesData.value.activosMasCaidas || [];
+    if (data.length === 0) return 1;
+    return Math.max(...data.map(item => parseInt(item.cantidad)));
+});
+
 const horizontalBarOptions = {
     indexAxis: 'y',
     responsive: true,
@@ -245,6 +336,65 @@ const applyFilters = () => {
 const resetFilters = () => {
     filters.value = { fechaInicio: '', fechaFin: '' };
     store.resetFilters();
+};
+
+const downloadPDF = () => {
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(18);
+    doc.text('Reporte de activos con mayor incidencia', 14, 22);
+
+    // Date Range
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    const dateText = filters.value.fechaInicio || filters.value.fechaFin
+        ? `Periodo: ${filters.value.fechaInicio || 'Inicio'} - ${filters.value.fechaFin || 'Actualidad'}`
+        : `Generado el: ${new Date().toLocaleDateString()}`;
+    doc.text(dateText, 14, 30);
+
+    // Table 1: Mantenimientos
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text('Mantenimientos', 14, 45);
+
+    const tableDataMantenimientos = reportesData.value.activosMasMantenimientos.map(item => [
+        item.nombre,
+        item.marca || 'N/A',
+        item.modelo || 'N/A',
+        item.cantidad
+    ]);
+
+    autoTable(doc, {
+        head: [['Activo', 'Marca', 'Modelo', 'Cantidad']],
+        body: tableDataMantenimientos,
+        startY: 50,
+        theme: 'grid',
+        headStyles: { fillColor: [245, 158, 11] }, // Accent color (orange-500)
+    });
+
+    // Table 2: Caídas (Critical)
+    const finalY = doc.lastAutoTable.finalY || 50;
+    doc.text('Caídas (Alertas Críticas)', 14, finalY + 15);
+
+    const tableDataCaidas = reportesData.value.activosMasCaidas.map(item => [
+        item.nombre,
+        item.marca || 'N/A',
+        item.modelo || 'N/A',
+        item.cantidad
+    ]);
+
+    autoTable(doc, {
+        head: [['Activo', 'Marca', 'Modelo', 'Cantidad']],
+        body: tableDataCaidas,
+        startY: finalY + 20,
+        theme: 'grid',
+        headStyles: { fillColor: [239, 68, 68] }, // Red color (red-500)
+    });
+
+    // Save PDF
+    const filename = `reporte_activos_fallos_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(filename);
 };
 
 onMounted(() => {

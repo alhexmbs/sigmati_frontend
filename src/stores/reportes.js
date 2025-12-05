@@ -7,7 +7,8 @@ export const useReportesStore = defineStore('reportes', {
             areasMasMantenimientos: [],
             tiempoPromedioPorTipo: [],
             activosMasMantenimientos: [],
-            distribucionEstado: []
+            distribucionEstado: [],
+            activosMasCaidas: []
         },
         filters: {
             fechaInicio: '',
