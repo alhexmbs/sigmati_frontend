@@ -21,31 +21,42 @@
                 <!-- Cumplimiento Preventivo -->
                 <Card class="flex flex-col items-center justify-center p-6">
                     <h3 class="text-lg font-semibold text-slate-700 mb-4">Cumplimiento preventivo</h3>
-                    <div class="w-48 h-48 relative">
+                    <div class="w-48 h-48 relative mb-4">
                         <Doughnut :data="cumplimientoData" :options="percentageOptions" />
                         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <span class="text-2xl font-bold text-slate-800">{{ graficos?.kpis?.cumplimientoPreventivo || '0' }}%</span>
+                            <span class="text-2xl font-bold text-slate-800">{{ graficos?.kpis?.cumplimientoPreventivo ||
+                                '0' }}%</span>
                         </div>
                     </div>
+                    <p class="text-xs text-slate-500 text-center px-4">
+                        Porcentaje de mantenimientos preventivos completados vs. programados.
+                    </p>
                 </Card>
 
                 <!-- Evidencia Registrada -->
                 <Card class="flex flex-col items-center justify-center p-6">
                     <h3 class="text-lg font-semibold text-slate-700 mb-4">Evidencia registrada</h3>
-                    <div class="w-48 h-48 relative">
+                    <div class="w-48 h-48 relative mb-4">
                         <Doughnut :data="evidenciaData" :options="percentageOptions" />
                         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <span class="text-2xl font-bold text-slate-800">{{ graficos?.kpis?.evidenciaRegistrada || '0' }}%</span>
+                            <span class="text-2xl font-bold text-slate-800">{{ graficos?.kpis?.evidenciaRegistrada ||
+                                '0' }}%</span>
                         </div>
                     </div>
+                    <p class="text-xs text-slate-500 text-center px-4">
+                        Porcentaje de mantenimientos finalizados que cuentan con evidencia fotográfica.
+                    </p>
                 </Card>
 
                 <!-- Preventivos por Servicio -->
-                <Card class="col-span-1 md:col-span-1 lg:col-span-1">
+                <Card class="col-span-1 md:col-span-1 lg:col-span-1 p-6">
                     <h3 class="text-lg font-semibold text-slate-700 mb-4">Preventivos por servicio (mes)</h3>
-                    <div class="h-64">
+                    <div class="h-64 mb-4">
                         <Bar :data="preventivosData" :options="barOptions" />
                     </div>
+                    <p class="text-xs text-slate-500 text-center">
+                        Cantidad de mantenimientos preventivos realizados por servicio durante el mes actual.
+                    </p>
                 </Card>
             </div>
         </div>
@@ -92,13 +103,13 @@ import Card from '@/components/ui/Card.vue';
 import { useDashboardStore } from '@/stores/dashboard';
 import { Server, AlertTriangle, Wrench, Bell, BarChart3, PieChart } from 'lucide-vue-next';
 import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  BarElement,
-  CategoryScale,
-  LinearScale
+    Chart as ChartJS,
+    ArcElement,
+    Tooltip,
+    Legend,
+    BarElement,
+    CategoryScale,
+    LinearScale
 } from 'chart.js';
 import { Doughnut, Bar } from 'vue-chartjs';
 

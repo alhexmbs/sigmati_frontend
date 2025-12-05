@@ -89,7 +89,7 @@
                     <Button variant="primary" type="submit" :disabled="isSubmitting">
                         <div v-if="isSubmitting" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2">
                         </div>
-                        Crear Servidor
+                        Crear servidor
                     </Button>
                 </div>
             </form>
@@ -145,7 +145,7 @@ const form = ref({
     modelo: '',
     id_area: '',
     descripcion: '',
-    tipo: 'Servidor' // Default type
+    tipo: 'SERVIDOR' // Default type
 });
 
 const openModal = () => {
@@ -155,7 +155,7 @@ const openModal = () => {
         modelo: '',
         id_area: '',
         descripcion: '',
-        tipo: 'Servidor'
+        tipo: 'SERVIDOR'
     };
     isModalOpen.value = true;
 };

@@ -25,9 +25,13 @@ export const useMantenimientosStore = defineStore('mantenimientos', {
                 const response = await api.post('/mantenimientos/', mantenimiento);
                 // Assuming create returns the created object in data.data or just data
                 // Usually POST returns the created object. Let's assume standard wrapper.
-                const created = response.data.data || response.data;
-                this.mantenimientos.push(created);
-                return created;
+                // const created = response.data.data || response.data;
+                // this.mantenimientos.push(created);
+                // Refresh list to get the new item at the top (sorted by backend) and with full details (joins)
+                await this.fetchMantenimientos();
+                // return created; // We can still return the created object if needed, but it might be partial. 
+                // Better to return the response data as before for the ID.
+                return response.data.data || response.data;
             } catch (error) {
                 console.error('Error creating mantenimiento:', error);
                 throw error;

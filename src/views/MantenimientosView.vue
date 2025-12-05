@@ -703,7 +703,7 @@ const formatDate = (dateString) => {
     return new Intl.DateTimeFormat('es-PE', {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit', hour12: false,
-        timeZone: 'UTC' // Importante para mantener tu hora correcta
+        timeZone: 'UTC'
     }).format(date);
 };
 

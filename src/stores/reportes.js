@@ -8,7 +8,10 @@ export const useReportesStore = defineStore('reportes', {
             tiempoPromedioPorTipo: [],
             activosMasMantenimientos: [],
             distribucionEstado: [],
-            activosMasCaidas: []
+            activosMasCaidas: [],
+            tiempoPerdidoPorArea: [],
+            activosMayorTiempoPerdido: [],
+            mttrPorArea: []
         },
         filters: {
             fechaInicio: '',

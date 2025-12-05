@@ -162,54 +162,45 @@
                 </div>
             </Card>
 
-            <!-- Activos con más caídas (Critical) -->
+            <!-- Activos con mayor número de caídas (Critical) -->
             <Card class="overflow-hidden mt-8">
-                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <div class="p-6 border-b border-slate-100">
                     <h3 class="text-lg font-semibold text-slate-800">Activos con mayor número de caídas (Critical)</h3>
+                    <p class="text-sm text-slate-500">Top 5 activos con más alertas críticas</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full">
-                        <thead class="bg-slate-50">
+                        <thead class="bg-slate-50 text-xs uppercase text-slate-500 font-medium">
                             <tr>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                    Activo</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                    Marca</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                    Modelo</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                    Cantidad de caídas</th>
-                                <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                    Barra</th>
+                                <th class="px-6 py-3 text-left tracking-wider">Nombre</th>
+                                <th class="px-6 py-3 text-left tracking-wider">Marca</th>
+                                <th class="px-6 py-3 text-left tracking-wider">Modelo</th>
+                                <th class="px-6 py-3 text-right tracking-wider">Cantidad</th>
+                                <th class="px-6 py-3 text-left tracking-wider w-1/3">Visualización</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-slate-100">
+                        <tbody class="divide-y divide-slate-100">
                             <tr v-for="(item, index) in reportesData.activosMasCaidas" :key="index"
                                 class="hover:bg-slate-50/50">
+
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-red-50 rounded-lg">
-                                            <Server class="w-4 h-4 text-red-600" />
-                                        </div>
-                                        <span class="font-medium text-slate-900">{{ item.nombre }}</span>
-                                    </div>
+                                    <span class="font-medium text-slate-900">{{ item.nombre }}</span>
                                 </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
                                     {{ item.marca || 'N/A' }}
                                 </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
                                     {{ item.modelo || 'N/A' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+
+                                <td class="px-6 py-3 text-right whitespace-nowrap">
                                     <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
                                         {{ item.cantidad }}
                                     </span>
                                 </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap w-1/3">
                                     <div class="w-full bg-slate-100 rounded-full h-2">
                                         <div class="bg-red-500 h-2 rounded-full"
@@ -297,6 +288,24 @@ const maxCriticalCount = computed(() => {
     return Math.max(...data.map(item => parseInt(item.cantidad)));
 });
 
+const maxTiempoPerdido = computed(() => {
+    const data = reportesData.value.tiempoPerdidoPorArea || [];
+    if (data.length === 0) return 1;
+    return Math.max(...data.map(item => parseFloat(item.horas_perdidas)));
+});
+
+const maxTiempoPerdidoActivo = computed(() => {
+    const data = reportesData.value.activosMayorTiempoPerdido || [];
+    if (data.length === 0) return 1;
+    return Math.max(...data.map(item => parseFloat(item.horas_perdidas)));
+});
+
+const maxMttr = computed(() => {
+    const data = reportesData.value.mttrPorArea || [];
+    if (data.length === 0) return 1;
+    return Math.max(...data.map(item => parseFloat(item.mttr_horas)));
+});
+
 const horizontalBarOptions = {
     indexAxis: 'y',
     responsive: true,
@@ -343,58 +352,107 @@ const downloadPDF = () => {
 
     // Title
     doc.setFontSize(18);
-    doc.text('Reporte de activos con mayor incidencia', 14, 22);
+    doc.text('Reporte de activos, servicios e incidencias', 14, 22);
+    doc.setTextColor(40, 40, 40);
 
-    // Date Range
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    const dateText = filters.value.fechaInicio || filters.value.fechaFin
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 14, 30);
+
+    // Assuming activeDateFilter is derived from filters.value or a similar mechanism
+    // If activeDateFilter is not defined elsewhere, you might need to define it or adapt this line.
+    // For now, let's use the existing filters.value to construct the date range text.
+    const dateRangeText = (filters.value.fechaInicio || filters.value.fechaFin)
         ? `Periodo: ${filters.value.fechaInicio || 'Inicio'} - ${filters.value.fechaFin || 'Actualidad'}`
-        : `Generado el: ${new Date().toLocaleDateString()}`;
-    doc.text(dateText, 14, 30);
+        : '';
+    if (dateRangeText) {
+        doc.text(dateRangeText, 14, 36);
+    }
 
     // Table 1: Mantenimientos
-    doc.setFontSize(14);
-    doc.setTextColor(0);
-    doc.text('Mantenimientos', 14, 45);
-
-    const tableDataMantenimientos = reportesData.value.activosMasMantenimientos.map(item => [
-        item.nombre,
-        item.marca || 'N/A',
-        item.modelo || 'N/A',
-        item.cantidad
-    ]);
-
     autoTable(doc, {
-        head: [['Activo', 'Marca', 'Modelo', 'Cantidad']],
-        body: tableDataMantenimientos,
-        startY: 50,
+        startY: 45,
+        head: [['Activo', 'Marca', 'Modelo', 'Cantidad de mantenimientos']],
+        body: reportesData.value.activosMasMantenimientos.map(item => [
+            item.nombre,
+            item.marca || '-',
+            item.modelo || '-',
+            item.cantidad
+        ]),
         theme: 'grid',
-        headStyles: { fillColor: [245, 158, 11] }, // Accent color (orange-500)
+        headStyles: { fillColor: [66, 133, 244] },
+        styles: { fontSize: 9 }
     });
 
     // Table 2: Caídas (Critical)
-    const finalY = doc.lastAutoTable.finalY || 50;
+    let finalY = doc.lastAutoTable.finalY || 50;
     doc.text('Caídas (Alertas críticas)', 14, finalY + 15);
 
-    const tableDataCaidas = reportesData.value.activosMasCaidas.map(item => [
-        item.nombre,
-        item.marca || 'N/A',
-        item.modelo || 'N/A',
-        item.cantidad
-    ]);
-
     autoTable(doc, {
-        head: [['Activo', 'Marca', 'Modelo', 'Cantidad']],
-        body: tableDataCaidas,
         startY: finalY + 20,
+        head: [['Activo', 'Marca', 'Modelo', 'Cantidad']],
+        body: reportesData.value.activosMasCaidas.map(item => [
+            item.nombre,
+            item.marca || '-',
+            item.modelo || '-',
+            item.cantidad
+        ]),
         theme: 'grid',
-        headStyles: { fillColor: [239, 68, 68] }, // Red color (red-500)
+        headStyles: { fillColor: [220, 53, 69] }, // Red
+        styles: { fontSize: 9 }
     });
 
-    // Save PDF
-    const filename = `reporte_activos_fallos_${new Date().toISOString().split('T')[0]}.pdf`;
-    doc.save(filename);
+    // Table 3: Tiempo Perdido por Área
+    finalY = doc.lastAutoTable.finalY;
+    doc.text('Tiempo perdido por área', 14, finalY + 15);
+
+    autoTable(doc, {
+        startY: finalY + 20,
+        head: [['Área', 'Horas perdidas']],
+        body: reportesData.value.tiempoPerdidoPorArea.map(item => [
+            item.nombre,
+            `${item.horas_perdidas} h`
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [255, 152, 0] }, // Orange
+        styles: { fontSize: 9 }
+    });
+
+    // Table 4: Activos con Mayor Tiempo Perdido
+    finalY = doc.lastAutoTable.finalY;
+    doc.text('Activos con mayor tiempo perdido', 14, finalY + 15);
+
+    autoTable(doc, {
+        startY: finalY + 20,
+        head: [['Activo', 'Marca', 'Modelo', 'Horas Perdidas']],
+        body: reportesData.value.activosMayorTiempoPerdido.map(item => [
+            item.nombre,
+            item.marca || '-',
+            item.modelo || '-',
+            `${item.horas_perdidas} h`
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [220, 53, 69] }, // Red
+        styles: { fontSize: 9 }
+    });
+
+    // Table 5: MTTR por Área
+    finalY = doc.lastAutoTable.finalY;
+    doc.text('Tiempo promedio de reparación por área', 14, finalY + 15);
+
+    autoTable(doc, {
+        startY: finalY + 20,
+        head: [['Área', 'Tiempo promedio de reparación (Horas)']],
+        body: reportesData.value.mttrPorArea.map(item => [
+            item.nombre,
+            `${item.mttr_horas} h`
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [33, 150, 243] }, // Blue
+        styles: { fontSize: 9 }
+    });
+
+    doc.save('reporte-activos.pdf');
 };
 
 onMounted(() => {
